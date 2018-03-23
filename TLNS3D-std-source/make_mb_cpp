@@ -1,0 +1,15 @@
+#
+cpp -traditional-cpp -P -DTLN_DBL main.F main.f
+cpp -traditional-cpp -P -DTLN_DBL tlns3d.F tlns3d.f
+cpp -traditional-cpp -P -DTLN_DBL bcflow.F bcflow.f
+cpp -traditional-cpp -P -DTLN_DBL bcturb.F bcturb.f
+cpp -traditional-cpp -P -DTLN_DBL bcvol.F bcvol.f
+cpp -traditional-cpp -P -DTLN_DBL disdr.F disdr.f
+cpp -traditional-cpp -P -DTLN_DBL errexit.F errexit.f
+cpp -traditional-cpp -P -DTLN_DBL force.F force.f
+cpp -traditional-cpp -P -DTLN_DBL turbdr.F turbdr.f
+cpp -traditional-cpp -P -DTLN_DBL savsol2.F savsol2.f
+cpp -traditional-cpp -P -DTLN_DBL savsolavg.F savsolavg.f
+cpp -traditional-cpp -P -DTLN_DBL savdata.F savdata.f
+cpp -traditional-cpp -P -DTLN_DBL savtim.F savtim.f
+cpp -traditional-cpp -P -DTLN_DBL solve.F solve.f

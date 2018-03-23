@@ -1,0 +1,545 @@
+c bcturb.Fasync
+c---  lpchs is cumulative value of surface segments with patched b.c.
+c---  on current grid level
+c---  litmbeg is starting no. in cumulative patched items at "lpchs" patch
+c---  lpchcb  is starting (global) location for patched cells on a block
+c
+      lpchs    = 0
+      litmbeg  = 1
+      lpchcb   = 1
+c
+c     nghost is number of ghost cells layers
+c     only 1 ghost cell is needed for turbulent quantities
+c
+      nghost   = 1
+c-------------------------------------------------------------------------
+      isegtag=0
+      isegnum=0
+      imaxbuf=0
+      do 999 ibloc = 1,nbloc
+      do 99 iseg = 1,nseg(ibloc)
+      isegtag=isegtag+1
+c
+      nbctype  =  imap(1 ,iseg ,ibloc)
+c
+      if ((nbctype.ge.0 .and. nbctype.le.1) .and.
+     .      (iturb.ge.1 .and.   iturb.le.3)) then
+c
+        nface   =  imap(2 ,iseg ,ibloc)
+        n1beg   =  imap(3 ,iseg ,ibloc)
+        n1end   =  imap(4 ,iseg ,ibloc)
+        n2beg   =  imap(5 ,iseg ,ibloc)
+        n2end   =  imap(6 ,iseg ,ibloc)
+        nblocs  =  imap(7 ,iseg ,ibloc)
+        nfaces  =  imap(8 ,iseg ,ibloc)
+        n1begs  =  imap(9 ,iseg ,ibloc)
+        n1ends  =  imap(10,iseg ,ibloc)
+        n2begs  =  imap(11,iseg ,ibloc)
+        n2ends  =  imap(12,iseg ,ibloc)
+c
+        n1cnt   =  iabs (n1ends - n1begs) + 2
+        n2cnt   =  iabs (n2ends - n2begs) + 2
+        if (nfaces.lt.0) then
+c
+c         source and target directions do not match
+c
+          ncnt  =  n1cnt
+          n1cnt =  n2cnt
+          n2cnt =  ncnt
+        endif
+        ncnt    =  n1cnt * n2cnt * nghost
+c ----------
+# if defined BUILD_MPI
+        if (nodes(ibloc)-1.eq.myrank) then
+# else
+        if (nodes(ibloc).eq.myrank) then
+# endif
+# if defined BUILD_MPI
+          if (nodes(nblocs)-1.ne.myrank) then
+# else
+          if (nodes(nblocs).ne.myrank) then
+# endif
+            call MPI_IRecv (danarecv(isegnum*ibufsz+1),
+     .           iturb*ncnt,RTYPE,
+     .           nodes(nblocs)-1,TAG_TURB+isegtag,mycomm,
+     .           idanareq(isegnum+1),ierr)
+            isegnum=isegnum+1
+c           if(iturb*ncnt.gt.imaxbuf)imaxbuf=iturb*ncnt
+          endif
+        endif
+      endif
+c
+ 99   continue
+ 999  continue
+c     if(isegnum.gt.ibufct)print *,'turb(A)ct ERR',isegnum,ibufct
+c     if(imaxbuf.gt.ibufsz)print *,'turb(A)sz ERR',imaxbuf,ibufsz
+c     print *,'bcturb(A)isegnum,imaxbuf=',isegnum,imaxbuf
+
+c-------  begin outer loop on the blocks for interface blocks  -----------
+c
+      isegtag=0
+      do 1000 ibloc = 1,nbloc
+      ns       =  nseg(ibloc)
+c----------  begin outer loop on the segments  ----------------------------
+      do 100 iseg = 1,ns
+      isegtag=isegtag+1
+c
+      nbctype  =  imap(1 ,iseg ,ibloc)
+c
+      if ((nbctype.eq.1 .or. nbctype.eq.0) .and.
+     .      (iturb.ge.1 .and.   iturb.le.3)) then
+c
+        nface   =  imap(2 ,iseg ,ibloc)
+        n1beg   =  imap(3 ,iseg ,ibloc)
+        n1end   =  imap(4 ,iseg ,ibloc)
+        n2beg   =  imap(5 ,iseg ,ibloc)
+        n2end   =  imap(6 ,iseg ,ibloc)
+        nblocs  =  imap(7 ,iseg ,ibloc)
+        nfaces  =  imap(8 ,iseg ,ibloc)
+        n1begs  =  imap(9 ,iseg ,ibloc)
+        n1ends  =  imap(10,iseg ,ibloc)
+        n2begs  =  imap(11,iseg ,ibloc)
+        n2ends  =  imap(12,iseg ,ibloc)
+c
+        n1cnt   =  iabs (n1ends - n1begs) + 2
+        n2cnt   =  iabs (n2ends - n2begs) + 2
+        if (nfaces.lt.0) then
+c
+c         source and target directions do not match
+c
+          ncnt  =  n1cnt
+          n1cnt =  n2cnt
+          n2cnt =  ncnt
+        endif
+        ncnt    =  n1cnt * n2cnt * nghost
+c--------------  block-interface/inner-cut  -----------------------------
+c       get ghost cell variables from source block
+c
+# if defined BUILD_MPI
+        if (nodes(nblocs)-1.eq.myrank) then
+# else
+        if (nodes(nblocs).eq.myrank) then
+# endif
+# if defined BUILD_MPI
+          if (nodes(ibloc)-1.ne.myrank) then
+# else
+          if (nodes(ibloc).ne.myrank) then
+# endif
+c
+           call bccutget (imn,jmn,kmn,
+     .     im  (igrid,nblocs),jm  (igrid,nblocs),km  (igrid,nblocs),
+     .     imp2(igrid,nblocs),jmp2(igrid,nblocs),kmp2(igrid,nblocs),
+     .       eomu(m1cc(igrid,nblocs)),
+     .     nfaces,n1begs,n1ends,n2begs,n2ends,
+     .     nghost,wk2d(1)                                  )
+c
+          if (iturb.eq.2 .or. iturb.eq.3)
+     .     call bccutget (imn,jmn,kmn,
+     .     im  (igrid,nblocs),jm  (igrid,nblocs),km  (igrid,nblocs),
+     .     imp2(igrid,nblocs),jmp2(igrid,nblocs),kmp2(igrid,nblocs),
+     .       turv1(m1cc(igrid,nblocs)),
+     .     nfaces,n1begs,n1ends,n2begs,n2ends,
+     .     nghost,wk2d(1+ncnt)                             )
+c
+          if (iturb.eq.3)
+     .     call bccutget (imn,jmn,kmn,
+     .     im  (igrid,nblocs),jm  (igrid,nblocs),km  (igrid,nblocs),
+     .     imp2(igrid,nblocs),jmp2(igrid,nblocs),kmp2(igrid,nblocs),
+     .       turv2(m1cc(igrid,nblocs)),
+     .     nfaces,n1begs,n1ends,n2begs,n2ends,
+     .     nghost,wk2d(1+2*ncnt)                           )
+c
+c         if target is not local, send ghost cell variables to node
+c
+            imsgcount=imsgcount+1
+            call MPI_Send (wk2d,iturb*ncnt,RTYPE,
+     .           nodes(ibloc)-1,TAG_TURB+isegtag,mycomm,ierr)
+
+          endif
+        endif
+      endif
+ 100  continue
+1000  continue
+      if(isegnum.ne.0)call mpi_waitall(isegnum,idanareq,danasa,ierr)
+c-----------------------------------
+      isegnum=0
+      do 1005 ibloc = 1,nbloc
+      ns       =  nseg(ibloc)
+c----------  begin outer loop on the segments  ----------------------------
+      do 105 iseg = 1,ns
+c
+      nbctype  =  imap(1 ,iseg ,ibloc)
+      if ((nbctype.eq.1 .or. nbctype.eq.0) .and.
+     .      (iturb.ge.1 .and.   iturb.le.3)) then
+c
+        nface   =  imap(2 ,iseg ,ibloc)
+        n1beg   =  imap(3 ,iseg ,ibloc)
+        n1end   =  imap(4 ,iseg ,ibloc)
+        n2beg   =  imap(5 ,iseg ,ibloc)
+        n2end   =  imap(6 ,iseg ,ibloc)
+        nblocs  =  imap(7 ,iseg ,ibloc)
+        nfaces  =  imap(8 ,iseg ,ibloc)
+        n1begs  =  imap(9 ,iseg ,ibloc)
+        n1ends  =  imap(10,iseg ,ibloc)
+        n2begs  =  imap(11,iseg ,ibloc)
+        n2ends  =  imap(12,iseg ,ibloc)
+c
+        n1cnt   =  iabs (n1ends - n1begs) + 2
+        n2cnt   =  iabs (n2ends - n2begs) + 2
+        if (nfaces.lt.0) then
+c
+c         source and target directions do not match
+c
+          ncnt  =  n1cnt
+          n1cnt =  n2cnt
+          n2cnt =  ncnt
+        endif
+        ncnt    =  n1cnt * n2cnt * nghost
+
+# if defined BUILD_MPI
+        if((nodes(nblocs)-1.eq.myrank).and.
+     .    (nodes(ibloc)-1.eq.myrank))then
+# else
+        if((nodes(nblocs).eq.myrank).and.
+     .    (nodes(ibloc).eq.myrank))then
+# endif
+c
+           call bccutget (imn,jmn,kmn,
+     .     im  (igrid,nblocs),jm  (igrid,nblocs),km  (igrid,nblocs),
+     .     imp2(igrid,nblocs),jmp2(igrid,nblocs),kmp2(igrid,nblocs),
+     .       eomu(m1cc(igrid,nblocs)),
+     .     nfaces,n1begs,n1ends,n2begs,n2ends,
+     .     nghost,wk2d(1)                                  )
+c
+          if (iturb.eq.2 .or. iturb.eq.3)
+     .     call bccutget (imn,jmn,kmn,
+     .     im  (igrid,nblocs),jm  (igrid,nblocs),km  (igrid,nblocs),
+     .     imp2(igrid,nblocs),jmp2(igrid,nblocs),kmp2(igrid,nblocs),
+     .       turv1(m1cc(igrid,nblocs)),
+     .     nfaces,n1begs,n1ends,n2begs,n2ends,
+     .     nghost,wk2d(1+ncnt)                             )
+c
+          if (iturb.eq.3)
+     .     call bccutget (imn,jmn,kmn,
+     .     im  (igrid,nblocs),jm  (igrid,nblocs),km  (igrid,nblocs),
+     .     imp2(igrid,nblocs),jmp2(igrid,nblocs),kmp2(igrid,nblocs),
+     .       turv2(m1cc(igrid,nblocs)),
+     .     nfaces,n1begs,n1ends,n2begs,n2ends,
+     .     nghost,wk2d(1+2*ncnt)                           )
+c
+        endif
+c
+c       update ghost cell variables on target block
+c
+# if defined BUILD_MPI
+        if (nodes(ibloc)-1.eq.myrank) then
+# else
+        if (nodes(ibloc).eq.myrank) then
+# endif
+c
+c         receive ghost cell variables from node if not already local
+c
+# if defined BUILD_MPI
+          if (nodes(nblocs)-1.ne.myrank) then
+# else
+          if (nodes(nblocs).ne.myrank) then
+# endif
+            do idana=1,iturb*ncnt
+              wk2d(idana)=danarecv(isegnum*ibufsz+idana)
+           enddo
+            isegnum=isegnum+1
+          endif
+c
+           call bccutset (imn,jmn,kmn,
+     .     im  (igrid,ibloc),jm  (igrid,ibloc),km  (igrid,ibloc),
+     .     imp2(igrid,ibloc),jmp2(igrid,ibloc),kmp2(igrid,ibloc),
+     .       eomu(m1cc(igrid,ibloc)),
+     .     nface,n1beg,n1end,n2beg,n2end,
+     .     nghost,wk2d(1)       ,n1cnt,n2cnt                )
+c
+          if (iturb.eq.2 .or. iturb.eq.3)
+     .     call bccutset (imn,jmn,kmn,
+     .     im  (igrid,ibloc),jm  (igrid,ibloc),km  (igrid,ibloc),
+     .     imp2(igrid,ibloc),jmp2(igrid,ibloc),kmp2(igrid,ibloc),
+     .       turv1(m1cc(igrid,ibloc)),
+     .     nface,n1beg,n1end,n2beg,n2end,
+     .     nghost,wk2d(1+ncnt)  ,n1cnt,n2cnt                )
+c
+          if (iturb.eq.3)
+     .     call bccutset (imn,jmn,kmn,
+     .     im  (igrid,ibloc),jm  (igrid,ibloc),km  (igrid,ibloc),
+     .     imp2(igrid,ibloc),jmp2(igrid,ibloc),kmp2(igrid,ibloc),
+     .       turv2(m1cc(igrid,ibloc)),
+     .     nface,n1beg,n1end,n2beg,n2end,
+     .     nghost,wk2d(1+2*ncnt),n1cnt,n2cnt                )
+c
+        endif
+      endif
+c
+c-----      end loop on segments
+  105 continue
+c-----      end loop on blocks
+ 1005 continue
+
+c************************************************************
+c---------- initialize variables on patched boundaries
+c
+      if (ipatchg.eq.0) go to 1077
+      do 1001 ibloc=1,nbloc
+c
+      if (ntpchcb(ibloc,igrid).le.0) go to 1001
+c
+# if defined BUILD_MPI
+      if (nodes(ibloc)-1.eq.myrank) then
+# else
+      if (nodes(ibloc).eq.myrank) then
+# endif
+c
+          if( (m1pch1(ibloc,igrid)+ntpchcb(ibloc,igrid)).gt.mxtpchc)
+     .    then
+             write (iwrit,'(2x,"dimension conflict for mxtpchc "/)')
+             write (iwrit,'(2x,"mxtpchc m1pch1 ntpchc igrid ibloc"/)')
+             write (iwrit,'(2x,5i7)') mxtpchc,m1pch1(ibloc,igrid),
+     .       ntpchcb(ibloc,igrid),igrid,ibloc
+             write (iwrit,'(2x,"stop in bcturb sending ipatchc"/)')
+c
+             call ERREXIT (nodes)
+
+          endif
+        call initpev (imn,jmn,kmn,
+     .    im  (igrid,ibloc), jm  (igrid,ibloc), km  (igrid,ibloc),
+     .    imp2(igrid,ibloc), jmp2(igrid,ibloc), kmp2(igrid,ibloc),
+     .    eomu(m1cc(igrid,ibloc)),
+     .    turv1(m1cc(igrid,ibloc)), turv2(m1cc(igrid,ibloc)),
+     .    npchcbf(1,ibloc,igrid),      ipatchc(m1pch1(ibloc,igrid)),
+     .    jpatchc(m1pch1(ibloc,igrid)),kpatchc(m1pch1(ibloc,igrid)),
+     .    igrid, isoln )
+c     else
+c       do iface=1,6
+c         if (npchcbf(iface,ibloc,igrid).gt.0)
+c    .      lpchcb = lpchcb + npchcbf(iface,ibloc,igrid)
+c       enddo
+      endif
+
+ 1001 continue
+
+c------------- patched interface ---------------------------------------
+c post receives --------------------------------------------------------
+      isegnum=0
+      isegtag=0
+      do 1119 ibloc=1,nbloc
+      if (ntpchcb(ibloc,igrid).le.0) go to 1119
+      litmbeg  = m1pch2(ibloc,igrid)
+      do 119 lpchs=lswpchb(ibloc,igrid)+1,lswpche(ibloc,igrid)
+        isegtag=isegtag+1
+c
+c      convert face numbers to tlns3d's convention
+c      note: ibloc1 and ibloc are equal (this was already checked)
+c
+       ibloc1 = lspchb1(lpchs,igrid)
+       iface1 = ifacetr(lspchf1 (lpchs,igrid))
+       ibloc2 = lspchb2 (lpchs,igrid)
+       iface2 = ifacetr(lspchf2 (lpchs,igrid))
+       litems = npchitm (lpchs,igrid)
+       ncnt   = litems * nghost
+c
+# if defined BUILD_MPI
+       if (nodes(ibloc)-1.eq.myrank) then
+# else
+       if (nodes(ibloc).eq.myrank) then
+# endif
+# if defined BUILD_MPI
+         if (nodes(ibloc2)-1.ne.myrank) then
+# else
+         if (nodes(ibloc2).ne.myrank) then
+# endif
+           call MPI_IRecv (danarecv(isegnum*ibufsz+1),
+     .          iturb*ncnt,RTYPE,
+     .          nodes(ibloc2)-1,TAG_TURB2+isegtag,
+     .          mycomm,idanareq(isegnum+1),ierr)
+           isegnum=isegnum+1
+         endif
+       endif
+ 119  continue
+1119  continue
+c
+c post sends --------------------------------------------------------
+c
+      isegtag=0
+      do 1200 ibloc=1,nbloc
+      if (ntpchcb(ibloc,igrid).le.0) go to 1200
+      litmbeg  = m1pch2(ibloc,igrid)
+      do 120 lpchs=lswpchb(ibloc,igrid)+1,lswpche(ibloc,igrid)
+        isegtag=isegtag+1
+c
+c      convert face numbers to tlns3d's convention
+c      note: ibloc1 and ibloc are equal (this was already checked)
+c
+       ibloc1 = lspchb1(lpchs,igrid)
+       iface1 = ifacetr(lspchf1 (lpchs,igrid))
+       ibloc2 = lspchb2 (lpchs,igrid)
+       iface2 = ifacetr(lspchf2 (lpchs,igrid))
+       litems = npchitm (lpchs,igrid)
+       ncnt   = litems * nghost
+c
+       iitmbeg = iitmsa(lpchs,igrid) - litems
+c
+c      put the source indices info. at the node containing ibloc2
+c
+# if defined BUILD_MPI
+       if((nodes(ibloc2)-1.eq.myrank).and.
+     .    (nodes(ibloc)-1.ne.myrank))then
+# else
+       if((nodes(ibloc2).eq.myrank).and.
+     .    (nodes(ibloc).ne.myrank))then
+# endif
+         call bcpchget (imn,jmn,kmn,
+     .     im  (igrid,ibloc2), jm  (igrid,ibloc2), km  (igrid,ibloc2),
+     .     imp2(igrid,ibloc2), jmp2(igrid,ibloc2), kmp2(igrid,ibloc2),
+     .     eomu(m1cc(igrid,ibloc2)),
+     .     iface2,ipitmbs(iitmbeg),jpitmbs(iitmbeg),kpitmbs(iitmbeg),
+     .     litems,nghost,wk2d(1))
+c
+         if (iturb.eq.2 .or. iturb.eq.3)
+     .     call bcpchget (imn,jmn,kmn,
+     .     im  (igrid,ibloc2), jm  (igrid,ibloc2), km  (igrid,ibloc2),
+     .     imp2(igrid,ibloc2), jmp2(igrid,ibloc2), kmp2(igrid,ibloc2),
+     .     turv1(m1cc(igrid,ibloc2)),
+     .     iface2,ipitmbs(iitmbeg),jpitmbs(iitmbeg),kpitmbs(iitmbeg),
+     .     litems,nghost,wk2d(1+ncnt))
+c
+         if (iturb.eq.3)
+     .     call bcpchget (imn,jmn,kmn,
+     .     im  (igrid,ibloc2), jm  (igrid,ibloc2), km  (igrid,ibloc2),
+     .     imp2(igrid,ibloc2), jmp2(igrid,ibloc2), kmp2(igrid,ibloc2),
+     .     turv2(m1cc(igrid,ibloc2)),
+     .     iface2,ipitmbs(iitmbeg),jpitmbs(iitmbeg),kpitmbs(iitmbeg),
+     .     litems,nghost,wk2d(1+2*ncnt))
+c
+           call MPI_Send (wk2d,iturb*ncnt,RTYPE,
+     .                    nodes(ibloc)-1,TAG_TURB2+isegtag,mycomm,ierr)
+       endif
+c
+ 120  continue
+1200  continue
+      if(isegnum.ne.0)call mpi_waitall(isegnum,idanareq,danasa,ierr)
+c post calculations ---------------------------------------------------
+c
+      isegnum=0
+      isegtag=0
+      do 1250 ibloc=1,nbloc
+      if (ntpchcb(ibloc,igrid).le.0) go to 1250
+      litmbeg  = m1pch2(ibloc,igrid)
+      do 125 lpchs=lswpchb(ibloc,igrid)+1,lswpche(ibloc,igrid)
+        isegtag=isegtag+1
+c
+c      convert face numbers to tlns3d's convention
+c      note: ibloc1 and ibloc are equal (this was already checked)
+c
+       ibloc1 = lspchb1(lpchs,igrid)
+       iface1 = ifacetr(lspchf1 (lpchs,igrid))
+       ibloc2 = lspchb2 (lpchs,igrid)
+       iface2 = ifacetr(lspchf2 (lpchs,igrid))
+       litems = npchitm (lpchs,igrid)
+       ncnt   = litems * nghost
+c
+       iitmbeg = iitmsa(lpchs,igrid) - litems
+c
+c      put the source indices info. at the node containing ibloc2
+c
+# if defined BUILD_MPI
+       if((nodes(ibloc2)-1.eq.myrank).and.
+     .   (nodes(ibloc)-1.eq.myrank))then
+# else
+       if((nodes(ibloc2).eq.myrank).and.
+     .   (nodes(ibloc).eq.myrank))then
+# endif
+c dana send calcs not performed (i.e., not sent)
+          call bcpchget (imn,jmn,kmn,
+     .      im  (igrid,ibloc2), jm  (igrid,ibloc2), km  (igrid,ibloc2),
+     .      imp2(igrid,ibloc2), jmp2(igrid,ibloc2), kmp2(igrid,ibloc2),
+     .      eomu(m1cc(igrid,ibloc2)),
+     .      iface2,ipitmb2(litmbeg),jpitmb2(litmbeg),kpitmb2(litmbeg),
+     .      litems,nghost,wk2d(1))
+c
+          if (iturb.eq.2 .or. iturb.eq.3) 
+     .     call bcpchget (imn,jmn,kmn,
+     .     im  (igrid,ibloc2), jm  (igrid,ibloc2), km  (igrid,ibloc2),
+     .     imp2(igrid,ibloc2), jmp2(igrid,ibloc2), kmp2(igrid,ibloc2),
+     .     turv1(m1cc(igrid,ibloc2)),
+     .     iface2,ipitmb2(litmbeg),jpitmb2(litmbeg),kpitmb2(litmbeg),
+     .     litems,nghost,wk2d(1+ncnt))
+c
+          if (iturb.eq.3) 
+     .     call bcpchget (imn,jmn,kmn,
+     .     im  (igrid,ibloc2), jm  (igrid,ibloc2), km  (igrid,ibloc2),
+     .     imp2(igrid,ibloc2), jmp2(igrid,ibloc2), kmp2(igrid,ibloc2),
+     .     turv2(m1cc(igrid,ibloc2)),
+     .     iface2,ipitmb2(litmbeg),jpitmb2(litmbeg),kpitmb2(litmbeg),
+     .     litems,nghost,wk2d(1+2*ncnt))
+       endif
+
+# if defined BUILD_MPI
+       if (nodes(ibloc)-1.eq.myrank) then
+# else
+       if (nodes(ibloc).eq.myrank) then
+# endif
+# if defined BUILD_MPI
+         if (nodes(ibloc2)-1.ne.myrank) then
+# else
+         if (nodes(ibloc2).ne.myrank) then
+# endif
+           do idana=1,iturb*ncnt
+             wk2d(idana)=danarecv(isegnum*ibufsz+idana)
+           enddo
+           isegnum=isegnum+1
+         endif
+c
+         call bcpchset (imn,jmn,kmn,
+     .     im  (igrid,ibloc),jm  (igrid,ibloc),km  (igrid,ibloc),
+     .     imp2(igrid,ibloc),jmp2(igrid,ibloc),kmp2(igrid,ibloc),
+     .     eomu(m1cc(igrid,ibloc)),
+     .     iface1,ipitmb1(litmbeg),jpitmb1(litmbeg),kpitmb1(litmbeg),
+     .     litems,nghost,frc(litmbeg),wk2d(1))
+c
+         if (iturb.eq.2 .or. iturb.eq.3)
+     .     call bcpchset (imn,jmn,kmn,
+     .     im  (igrid,ibloc),jm  (igrid,ibloc),km  (igrid,ibloc),
+     .     imp2(igrid,ibloc),jmp2(igrid,ibloc),kmp2(igrid,ibloc),
+     .     turv1(m1cc(igrid,ibloc)),
+     .     iface1,ipitmb1(litmbeg),jpitmb1(litmbeg),kpitmb1(litmbeg),
+     .     litems,nghost,frc(litmbeg),wk2d(1+ncnt))
+c
+         if (iturb.eq.3)
+     .     call bcpchset (imn,jmn,kmn,
+     .     im  (igrid,ibloc),jm  (igrid,ibloc),km  (igrid,ibloc),
+     .     imp2(igrid,ibloc),jmp2(igrid,ibloc),kmp2(igrid,ibloc),
+     .     turv2(m1cc(igrid,ibloc)),
+     .     iface1,ipitmb1(litmbeg),jpitmb1(litmbeg),kpitmb1(litmbeg),
+     .     litems,nghost,frc(litmbeg),wk2d(1+2*ncnt))
+c
+           litmbeg = litmbeg +litems
+         endif
+ 125  continue
+1250  continue
+c************************************************************
+ 1077 continue
+c
+c---      fill in edges (corners) of block boundaries with extrapolation b.c
+c
+      do 1002 ibloc=1,nbloc
+# if defined BUILD_MPI
+      if (nodes(ibloc)-1.eq.myrank)
+# else
+      if (nodes(ibloc).eq.myrank)
+# endif
+     .  call bcedgev (imn,jmn,kmn,
+     .    im  (igrid,ibloc), jm  (igrid,ibloc), km  (igrid,ibloc),
+     .    imp1(igrid,ibloc), jmp1(igrid,ibloc), kmp1(igrid,ibloc),
+     .    imp2(igrid,ibloc), jmp2(igrid,ibloc), kmp2(igrid,ibloc),
+     .    eomu(m1cc(igrid,ibloc)),
+     .    turv1(m1cc(igrid,ibloc)), turv2(m1cc(igrid,ibloc)),
+     .    igrid, isoln              )
+c
+c-----      end loop on blocks
+ 1002 continue

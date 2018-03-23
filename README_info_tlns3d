@@ -1,0 +1,24 @@
+1. The source code is provided in dir named "TLNS3D-std-source"
+   To create an executable on Linux machines with intel compiler,
+   use the following command in source directory:
+         make lib mb mpi (creates tlns3dmpi in current directory)
+   Note: tlns3dmpi is a parlallel version of execuatble requiring  mpi libraries
+         tlns3dmb  is an in-core version of executable, which does not need mpi libraries
+2. To run the code, use the commands
+         ./tlns3dmb < tlns3d-input-file > output-file
+         or
+         mpiexec -np ncores ./tlns3dmpi < tlns3d-input-file > output-file
+   where, ncores is the number of cores/processors used for running
+          ncore should be l.e. number of blocks in the grid for a given test case
+3. Note: tlns3d-input-file is an ascii input file used to specify the choice of
+         solver parameters. It also specified the names of grid, map (connectivity),
+         restart and several other output files 
+   Note: tlns3d.inp_description file describes the various input parameters
+         for flow solver
+
+4. The connectivity and boundary condition information required by the solver is
+   provided by a map file (name specified by tlns3d-input-file)
+   Note: tlna3d.map_description file describes the functionality of various parameters
+         that specify the boundary condition and connectivity information
+
+5. Some sample test cases are provided in a dir named "Test_cases"

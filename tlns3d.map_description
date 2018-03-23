@@ -1,0 +1,169 @@
+c*******************************************************************
+c     description of map file parameters used for tns3d multiblock code
+c*******************************************************************
+
+***************************  line type one  ************************
+
+      nbloc    : no. of blocks in the grid
+
+********************************************************************
+
+  Rest of the information is repeated nbloc times
+
+****    begin current block  information   **************************
+
+ ********************   line type two  *************************
+
+ nseg    : no. of face segments for the current block requiring b.c.'s
+
+ ivisb (1), (2),  (3) : refer to viscous fluxes in the
+        i,   j and k-directions respectively
+      : 1 to be evaluated, 0 not evaluated
+     (note : cross-flow terms are neglected (Thin-Layer approx.))
+
+ iturbb : parameter to set laminar or turbulent flow on current block
+        = 1 turbulence models are activated
+        = 0 flow is laminar in the current block
+
+ itrb1,itrb2 : index range in i-direction where flow is turbulent
+ jtrb1,jtrb2 : index range in j-direction where flow is turbulent
+ ktrb1,ktrb2 : index range in k-direction where flow is turbulent
+
+  Note : For itrb1,itrb2 = 0, flow is turbulent over complete i-range
+         For itrb1,itrb2 =-1, flow is laminar over complete i-range
+  Similar convention is used for the other two directions
+
+ The variables iturbb, itrb1, itrb2 ... ktrb2 are use to control extent
+ of turbulent flow for higher order turbulence models (iturb>1). These 
+ parameters have no impact on Baldwin-Lomax turbulence model (iturb=1)
+
+*****************************************************************
+
+  **************** Start Segment loop *********************************Y
+
+     Following information is to be repeated nseg times
+
+  ****    begin current segment  information   **************************
+
+               ******        line type three    ******
+
+      nbt     : block number
+      nst     : segment number
+      typ     : boundary condition type
+                  =-1  corresponds to a cut that patches to another block
+                       in a non-C0 fashion
+                     (no. of points on donor and receiving segments differ)
+                  = 0  corresponds to an inner cut that maps to same block
+                  = 1  corresponds to a cut that maps to another block
+                       in a point-to-point match fashion (C0 continuous)
+                     (no. of points on donor and receiving segments match)
+                  = 2  corresponds to a slip (inviscid) wall
+                  = 3  corresponds to a noslip (viscous) wall
+                  = 4  symmetry condition (nfs tells about which plane)
+                  = 5  downstream/extrapolation condition
+                  = 6  far-field condition (Riemann invariants)
+                  = 7  singular line
+                  = 8  fan-upstream engine boundary
+                  = 9  fan-downstream engine boundary
+                  =10  jet-nozzle upstream condition
+Note: More details about b.c.'s are avaialble in subroutine imapin.F
+ 
+      nft     : face number/type
+                  = 1  imin face
+                  = 2  imax face
+                  = 3  jmin face
+                  = 4  jmax face
+                  = 5  kmin face
+                  = 6  kmax face
+
+Note: We use clockwise notation for determining directions 1 and 2 used in next sets of inputs
+      e.g., for imin/imax face, direction 1 refers to j index, direction 2 to k index
+            for jmin/jmax face, direction 1 refers to k index, direction 2 to i index
+            for kmin/kmax face, direction 1 refers to i index, direction 2 to j index
+
+      1tmn    : start of index in direction 1 for defining this segment
+      1tmx    : end   of index in direction 1 for defining this segment
+      2tmn    : start of index in direction 2 for defining this segment
+      2tmx    : end   of index in direction 2 for defining this segment
+    
+      nbs     : For b.c. 'typ' = -1, 0 or 1
+                     nbs  = block number of the source segment
+                For b.c 'typ' = 4 or 5, specifies order of extrapolation
+                     nbs  = 0 for zero  order extrapolation
+                          = 1 for first order extrapolation
+
+      nfs     : For b.c. 'typ' = -1, 0 or 1
+                    |nfs| = face number/type of source segment
+                     nfs  > 0 direction 1 of source matches with
+                              directiom 1 of target
+                              same for direction 2
+                          < 0 direction 1 of source matches with
+                              directiom 2 of target and
+                              direction 2 of source matches with
+                              directiom 1 of target
+                For b.c. 'typ' = 4 (symmetry)
+                     nfs  = 1 symmetry is about x-plane
+                          = 2 symmetry is about y-plane
+                          = 3 symmetry is about z-plane
+            
+      The next 4 inputs are active only for b.c. 'typ' = -1, 0 or 1
+
+      1smn    : start of index in direction 1 of source segment
+      1smx    : end   of index in direction 1 of source segment
+      2smn    : start of index in direction 2 of source segment
+      2smx    : end   of index in direction 2 of source segment
+
+     (Note: set the above 4 variables to 0 for typ > 1)
+
+               ******        line type four    ******
+     (All the varibales on this line can be set to 0, except for Baldwin-
+      Lomax turbulence model, which is activated by iturb=1 in "input" file.
+      For higher turbulence models (iturb>1), the extent of turbulence
+      is controlled on a block-by block basis, rather than segment basis
+      by the variables iturbb, itrb1, itrb2, jtrb1, jtrb2, ktrb1 and ktrb2 
+      that are specified in the map file on top for each block)
+
+      ntrb    : specifies if turbulent flow is present on part of this segment
+              =  1  turbulent flow (viscous wall)
+              =  0  no turbulent flow (or laminar/inviscid flow)
+      1beg    : start of index in direction 1 for turbulent flow
+      1end    : end   of index in direction 1 for turbulent flow
+      2beg    : start of index in direction 2 for turbulent flow
+      2end    : end   of index in direction 2 for turbulent flow
+      fmx1    : start of index in normal direction  for fmax search 
+               (suggested value: 0.12* no. of points in normal direction)
+      fmx2    : end   of index in normal direction  for fmax search 
+               (suggested value: 0.66* no. of points in normal direction)
+      nvis    : end   of index in normal direction  for computing
+                eddy-viscosity
+               (suggested value: 0.75* no. of points in normal direction)
+ 
+               ******        line type five    ******
+
+  Note: This line contains 5 constant that carry different meaning for
+        different boundary conditions (described in subroutine imapin.F)
+        However, for viscous walls (bctype=3), they take following meaning
+
+      const1: twotref i.e. wall temperature (static) ratio (twall/tref)
+                (adaibatic condition is assumed if twotref = 0.0)
+      const2: cq i.e. mass flow rate for blowing/suction
+                (suggested default value = 0.)
+      const3: cpor i.e. Coefficient in wall-porosity b.c. (Darcy's law)
+                (suggested default value = 0.)
+      const4: pch i.e. Chamber pressure for Darcy's law for blowing/suction b.c.
+                (suggested default value = 1.)
+      const5: rad which Specifies radiation b.c.
+              = 1. radation b.c. is activated
+              = 0. radation b.c. is inactive
+                (suggested default value = 0.)
+
+   Note: Wall porosity and Radiation b.c.'s are currently not implemented
+
+   Note: Leave a blank line before inserting input for the next segment
+
+      ****    end of  input on current segment   **************************
+
+    ****    end of  segment  loop on current block   **************************
+
+
+****    end of  block loop   **************************

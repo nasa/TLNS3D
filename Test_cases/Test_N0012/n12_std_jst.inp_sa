@@ -1,0 +1,53 @@
+141x61 n0012 grid (from Spalart)
+grdfmt    fstrt     fsave     fplot     cpplot
+1.        0.        050.      0.        0.
+flev      fgrids    fmgtyp    ftorder   dtphy
+3.        3.        1.        0.0       0.20
+fcyc      fcpout    fcnvout   fsteps
+050.      0.        1.        1.
+050.      0.        1.        1.
+300.      0.        1.        1.
+gitr(1)   gitr(2)   gitr(3)   gitr(4)   gitr(5)
+1.        2.        3.        3.        3.
+gitp(1)   gitp(2)   gitp(3)   gitp(4)   gitp(5)
+0.        0.        0.        0.        0.
+cflf      hmf       vis2      vis4      zeta
+-6.5      .0        0.50      1.00      .500
+c(1)      c(2)      c(3)      c(4)      c(5)      c(6)
+.25       .16667    .375      .5        1.0       0.
+qfil(1)   qfil(2)   qfil(3)   qfil(4)   qfil(5)   qfil(6)
+-1.       0.        -1.       0.        -1.       0.
+beta(1)   beta(2)   beta(3)   beta(4)   beta(5)   beta(6)
+1.        0.        .56       0.        .44       0.
+smpmn     smpmx     smpmxt    vepsn     vepsl     cau       enteps
+0.10      2.50      3.5       0.3       0.1       0.0       1.0
+cflc      hmc       vis0      smoopic   smoopjc   smoopkc
+0.        0.        3.        0.30      0.30      0.30
+rm        rey\l     al        yaw       roll      i2dfl
+#0.10      3.000     12.0      0.        0.        1.0
+0.10      3.000      2.0      0.        0.        1.0
+gamma     pr        prt       suthc     tref      iturb     ipatchg
+1.4       1.0       1.0       198.6     460.0     2.0       0.0
+xref      yref      zref      sref      cref      scal
+0.25      0.        0.        1.0000    1.0       1.0
+iprec     cfls      ubmin     upk       alpha     delta      ubfil
+#0.        3.748     1.00      1.1       0.        0.         1.0
+ 2.        3.25      1.00      1.1       0.        0.         1.0
+diffac    rsvis     omega     betvis    betvisv   npcons     nexp
+4.0       4.0       3.0       0.0       1.0       2.         1.
+anin      aninb     bninb     ijac      icord     inav       iprbet
+0.0       0.0       0.0       0.        0.0       0.         0.
+'n12.i141.2d.4b.gr'      *** input co grid
+'n12.i141.2d.4b.map'     *** topological map file
+'n12.st'                 *** restart input file
+'n12.pl1'                *** output plotting file
+'n12.st1'                *** restart output file
+'n12.pch1'               *** restart output file
+'n12.pch2'               *** restart output file
+'n12.rhtall'             *** residuals at all times-steps
+'n12.rhtphy'             *** residuals at physical time-steps
+'n12.gpltfil'            *** plot3d gridfile for time-dependent solution
+'n12.qpltfil'            *** plot3d time-dependent solution
+'n12.datfil'             *** plot3d time-dependent data at selected nodes
+'n12.pntfil'             *** plot3d time-dependent data at selected times
+'n12.avgfil'             *** plot3d time-dependent data at selected times

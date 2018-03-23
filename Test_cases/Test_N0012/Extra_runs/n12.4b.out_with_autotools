@@ -1,0 +1,340 @@
+141x61 n0012 grid (from Spalart)
+formatted grid from n12.i141.2d.4b.gr
+ topological map file  : n12.i141.2d.4b.map
+ complete residual  file : n12.rhtall
+ physical time residual  file : n12.rhtphy
+ plot3d - time dependent grid  file : n12.gpltfil
+ plot3d - time dependent solution file: n12.qpltfil
+time dependent data - selected nodes): n12.datfil
+node specification file for datfil : n12.pntfil
+average flow-field file for UNS : n12.avgfil
+
+Node Assignments
+node  blocks  points  pts/max
+----  ------  ------  -------
+   1     4     26412   1.0000
+
+Grid Block Sizes
+block  node   imax   jmax   kmax     total
+-----  ----   ----   ----   ----     -----
+    1     1     69     29      3      6003
+    2     1     73     29      3      6351
+    3     1     73     33      3      7227
+    4     1     69     33      3      6831
+parameters for sizing for nnodes =
+
+     1
+
+mbloc =         4  mgrlev =        3  icumsiz =      304
+mxid  =        73  mxjd  =        33
+mxkd  =         3  mx1d  =        73
+mxsizc =     84103  mxsizn =     66166
+mxszcg =     23719  mxszfg =     60385
+mxs2dc =     13234  mxsurf =       284
+mxpchs =         1  mxtpchc =        1
+mpchitm =        1  mxpchc =        1  mxpitm =        1
+mxijkp3 =    16416  mx2dwk =      5776
+nbufct =         1  nbufsz =         1
+mgrleg =         2  mres   =   1350000
+msegt  =        20  msegn  =        50
+mtorder =        1  ntorder =        0  ngroup=        1
+mebdf =         0  ibdf2opt =        0
+mxdsti  =     63793  mxdstf  =    246084
+memory (MB) needed in tlns3d =     253
+ files=
+ n12.i141.2d.4b.gr                                                              
+  
+ n12.i141.2d.4b.map                                                             
+  
+ n12.st                                                                         
+  
+ n12.pl1                                                                        
+  
+ n12.st1                                                                        
+  
+ n12.pch1                                                                       
+  
+ n12.pch2                                                                       
+  
+ &AUXINPUT
+ DIFFAC  =   4.000000    ,
+ RSVIS   =   4.000000    ,
+ OMEGA   =   3.000000    ,
+ BETVIS  =  0.0000000E+00,
+ BETVISV =   1.000000    ,
+ ANIN    =  0.0000000E+00,
+ ANINB   =  0.0000000E+00,
+ BNINB   =  0.0000000E+00,
+ NPCONS  =           2,
+ NEXP    =           1,
+ IJAC    =           0,
+ ICORD   =           0,
+ INAV    =           0,
+ IPRBET  =           0
+ /
+
+ Program : TLNS3D - Multiblock Version
+ Distributed Computing using MPI message passing
+ Double Precision
+ Multistage Time-Stepping scheme using Multigrid acceleration technique for solving
+ Thin-Layer Navier-Stokes Equations with Baldwin-Lomax and one and two-equation Turb. Models
+
+ 141x61 n0012 grid (from Spalart)
+
+ Echo the input file to flow code
+
+       grdfmt      mstrt       msave       mplot      mcplpr      nodeout     favg      nrkstg
+      1.00000     0.00000    50.00000     0.00000     0.00000     0.00000     0.00000      1
+        nlev       ngrids      fmgtyp      ntorder    dtphy       frkcase     ftolrk
+      3.00000     3.00000     1.00000     0.00000     0.20000     0.00000     0.00000
+        ilev        ncyc       mbcupd     mcnvout     nsteps     ftol  
+          1      50.00000     0.00000     1.00000     1.00000     0.00000
+          2      50.00000     0.00000     1.00000     1.00000     0.00000
+          3     300.00000     0.00000     1.00000     1.00000     0.00000
+      nitr(1)     nitr(2)     nitr(3)     nitr(4)     nitr(5)     nitr(6)
+      1.00000     2.00000     3.00000
+      nitp(1)     nitp(2)     nitp(3)     nitp(4)     nitp(5)     nitp(6)    
+      0.00000     0.00000     0.00000
+       cflf         hmf        vis2        vis4        zeta    
+     -6.50000     0.00000     0.50000     1.00000     0.50000
+        c(1)        c(2)        c(3)        c(4)        c(5)        c(6)
+      0.25000     0.16667     0.37500     0.50000     1.00000     0.00000
+      qfil(1)     qfil(2)     qfil(3)     qfil(4)     qfil(5)     qfil(6)
+     -1.00000     0.00000    -1.00000     0.00000    -1.00000     0.00000
+      beta(1)     beta(2)     beta(3)     beta(4)     beta(5)     beta(6)
+      1.00000     0.00000     0.56000     0.00000     0.44000     0.00000
+       smoopi      smoopj      smoopk      vepsn       vepsl        cau        enteps
+      0.10000     2.50000     3.50000     0.30000     0.10000     0.00000     1.00000
+        cflc         hmc        vis0      smoopic     smoopjc     smoopkc
+      0.00000     0.00000     3.00000     0.30000     0.30000     0.30000
+         rm         reyl       alpha        yaw         roll      i2dfl
+      0.10000     3.00000     2.00000     0.00000     0.00000     1.00000
+        gamma       pr          prt       suthc        tref       iturb       ipatchg
+      1.40000     1.00000     1.00000   198.60001   460.00000     2.00000     0.00000
+        xref        yref        zref       sref
+      0.25000     0.00000     0.00000     1.00000
+       iprec        cfls       ubmin        upk       ulprec      deltpre      ubcon
+      2.00000     3.25000     1.00000     1.10000     0.00000     0.00000     1.00000
+
+ formatted grid file   : n12.i141.2d.4b.gr
+ topological map file  : n12.i141.2d.4b.map
+ plot output file      : n12.pl1
+ solution save file    : n12.st1
+
+ Start solution from scratch
+
+
+
+ grid block assignments
+  node  blocks    points
+    1      4       17608
+
+
+          ***  Boundary conditions for block  #         1     ***
+
+ On jmin face: k=     1 to     2 and i=     1 to    69
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   jmin  face: k=     1 to     2 and i=     1 to    69 of block    4
+
+ On kmax face: i=     1 to    69 and j=     1 to    29
+   symmetry condition     bctype      4
+
+ On kmin face: i=     1 to    69 and j=     1 to    29
+   symmetry condition     bctype      4
+
+ On jmax face: k=     1 to     2 and i=     1 to    69
+   far-field condition     bctype      6
+
+ On imax face: j=     1 to    29 and k=     1 to     2
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   imax  face: j=     1 to    29 and k=     1 to     2 of block    1
+
+ On imin face: j=     1 to    29 and k=     1 to     2
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   imin  face: j=     1 to    29 and k=     1 to     2 of block    2
+
+
+          ***  Boundary conditions for block  #         2     ***
+
+ On jmin face: k=     1 to     2 and i=     1 to    73
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   jmin  face: k=     1 to     2 and i=     1 to    73 of block    4
+
+ On imax face: j=     1 to    29 and k=     1 to     2
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   imax  face: j=     1 to    29 and k=     1 to     2 of block    1
+
+ On jmax face: k=     1 to     2 and i=     1 to    73
+   far-field condition     bctype      6
+
+ On kmin face: i=     1 to    73 and j=     1 to    29
+   symmetry condition     bctype      4
+
+ On kmax face: i=     1 to    73 and j=     1 to    29
+   symmetry condition     bctype      4
+
+ On imin face: j=     1 to    29 and k=     1 to     2
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   imin  face: j=     1 to    29 and k=     1 to     2 of block    2
+
+
+          ***  Boundary conditions for block  #         3     ***
+
+ On jmax face: k=     1 to     2 and i=     1 to    73
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   jmax  face: j=     1 to     2 and k=     1 to    73 of block    3
+
+ On imin face: j=     1 to    33 and k=     1 to     2
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   imin  face: j=     1 to    33 and k=     1 to     2 of block    2
+
+ On kmax face: i=     1 to    73 and j=     1 to    33
+   symmetry condition     bctype      4
+
+ On kmin face: i=     1 to    73 and j=     1 to    33
+   symmetry condition     bctype      4
+
+ On jmin face: k=     1 to     2 and i=     1 to    73
+   viscous wall condition     bctype      3
+   twall/tref =  0.10000E+01   cmassw  =  0.00000E+00   cporous =  0.00000E+00     pchamber   =  0.10000E+01   epsrad  =  0.00000E+00
+
+ On imax face: j=     1 to    33 and k=     1 to     2
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   imax  face: j=     1 to    33 and k=     1 to     2 of block    1
+
+
+          ***  Boundary conditions for block  #         4     ***
+
+ On jmax face: k=     1 to     2 and i=     1 to    69
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   jmax  face: j=     1 to     2 and k=     1 to    69 of block    3
+
+ On imax face: j=     1 to    33 and k=     1 to     2
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   imax  face: j=     1 to    33 and k=     1 to     2 of block    1
+
+ On imin face: j=     1 to    33 and k=     1 to     2
+   interface condition     bctype      1
+   one-to-one matched  interface with
+   imin  face: j=     1 to    33 and k=     1 to     2 of block    2
+
+ On jmin face: k=     1 to     2 and i=     1 to    69
+   viscous wall condition     bctype      3
+   twall/tref =  0.10000E+01   cmassw  =  0.00000E+00   cporous =  0.00000E+00     pchamber   =  0.10000E+01   epsrad  =  0.00000E+00
+
+ On kmin face: i=     1 to    69 and j=     1 to    33
+   symmetry condition     bctype      4
+
+ On kmax face: i=     1 to    69 and j=     1 to    33
+   symmetry condition     bctype      4
+
+
+          ***  Boundary conditions printout  is now completed     ***
+
+
+ storage OK for node    0
+
+ grid block dimensions
+ block  imax   jmax   kmax     total   node   nodeid
+    1     69     29      2      4002     1         1
+    2     73     29      2      4234     1         1
+    3     73     33      2      4818     1         1
+    4     69     33      2      4554     1         1
+
+ using Spalart turbulence model
+ turbulent zones:
+              Index Range                      Dimensions 
+  blk   i1   i2   j1   j2   k1   k2        im   jm   km turb
+    1    2   70    2   30    2    3        70   30    3    1
+    2    2   74    2   30    2    3        74   30    3    1
+    3    2   74    2   34    2    3        74   34    3    1
+    4    2   70    2   34    2    3        70   34    3    1
+
+
+ Steady-state Solution on   4 blocks
+ Full Multigrid using  3 grid levels
+ and V-Cycles on each grid level
+
+        rm          reyl        alpha       yaw         roll    
+      0.10000     3.00000     2.00000     0.00000     0.00000
+
+
+
+ Multigrid level  =   1
+ Number of Cycles =  50
+ Solution Grid    =   3
+
+ ibegr  icoars  ifine
+   3       3      3
+
+ cycle  work   max dr/dt i   j  k  n avg dr/dt max enthpy i   j   k  n max_rate avg_rate  cl       cdt         cdv        cmz
+
+       time        work    time/cyc    work/cyc       rtrms 1     rtrms 2   reductn/work reductn/cyc
+       0.00      0.0156      0.0000      0.0003    0.0000E+00  0.0000E+00         NaN         NaN
+
+
+
+ Multigrid level  =   2
+ Number of Cycles =  50
+ Solution Grid    =   2
+
+ ibegr  icoars  ifine
+   2       3      2
+
+ cycle  work   max dr/dt i   j  k  n avg dr/dt max enthpy i   j   k  n max_rate avg_rate  cl       cdt         cdv        cmz
+
+       time        work    time/cyc    work/cyc       rtrms 1     rtrms 2   reductn/work reductn/cyc
+       0.00      0.1250      0.0000      0.0025    0.0000E+00  0.0000E+00         NaN         NaN
+
+
+
+ Multigrid level  =   3
+ Number of Cycles = 300
+ Solution Grid    =   1
+
+ ibegr  icoars  ifine
+   1       3      1
+
+ cycle  work   max dr/dt i   j  k  n avg dr/dt max enthpy i   j   k  n max_rate avg_rate  cl       cdt         cdv        cmz
+
+       time        work    time/cyc    work/cyc       rtrms 1     rtrms 2   reductn/work reductn/cyc
+       0.00      1.0000      0.0000      0.0033    0.0000E+00  0.0000E+00         NaN         NaN
+
+
+ convergence for all grid levels
+
+       time        work    time/cyc    work/cyc       rtrms 1     rtrms 2   reductn/work reductn/cyc
+       0.00      1.1406    Infinity    Infinity    0.0000E+00  0.0000E+00         NaN         NaN
+
+
+ Force and moment results
+
+    mach number ang attack   ref area   ref length   x mom ref   y mom ref 
+      0.10000     2.00000     1.00000     1.00000     0.25000     0.00000
+          cl      cd form   cd friction       cd     l/d form       l/d    
+      0.00000     0.00000     0.00000     0.00000     0.00000     0.00000
+     cm pitch     cm roll      cm yaw      cn 
+      0.00000     0.00000     0.00000     0.00000
+
+
+                      time in seconds
+  node      user    system     total    wall clock
+     0      0.04      0.00      0.04        4.00
+
+
+ timings in seconds :      user    system     total    wall clock
+ time on all grids  :      0.00      0.00      0.00        0.00
+ time for execution :      0.04      0.00      0.04        4.00
+
+ total run time =    0 hours    0 minutes    0 seconds

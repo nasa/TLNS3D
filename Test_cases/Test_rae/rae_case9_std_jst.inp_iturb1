@@ -1,0 +1,61 @@
+viscous RAE2822 from Swanson
+grdfmt    fstrt     fsave     fplot     cpplot    fnout     favg
+1.        0.        100.      1.        0.        0.        0.
+flev      fgrids    fmgtyp    ftime     deltat    frkcase   ftolrk
+3.        4.        2.        0.        0.14      0.        1.e-06
+fcyc      fcpout    fcnvout   fstep     ftol
+0050.     0.        1.        001.      0.5
+0050.     0.        1.        001.      0.5
+0500.     0.        1.        001.      0.5
+gitr(1)   gitr(2)   gitr(3)   gitr(4)   gitr(5)
+#1.        1.        1.        1.        1.
+1.        2.        3.        3.        3.
+gitp(1)   gitp(2)   gitp(3)   gitp(4)   gitp(5)
+0.        0.        0.        0.        0.
+cflf      hmf       vis2      vis4      zeta
+#-150.0    .0        0.50      1.00      .500
+#-500.0     .0        0.50      1.00      .500
+ -6.5      .0        0.50      1.00      .500
+c(1)      c(2)      c(3)      c(4)      c(5)      c(6)
+#.0695     .1602     .2898     .506      1.0       0.
+#.25       .16667    .375      .5        1.0       0.
+ .25       .18       .40       .51       1.0       0.
+qfil(1)   qfil(2)   qfil(3)   qfil(4)   qfil(5)   qfil(6)
+#-1.       -1.       -1.       -1.       -1.       0.
+-1.00000     0.00000    -1.00000        0.00000    -1.00000     0.00000
+beta(1)   beta(2)   beta(3)   beta(4)   beta(5)   beta(6)
+ #1.       1.        1.        1.        1.        0.
+ 1.00000   0.00000   0.56000   0.00000   0.44000   0.00000
+smoopi    smoopj    smoopk    vepsn     vepsl     cau       enteps
+0.10      2.50      3.5       0.30      0.10      0.        1.0
+cflc      hmc       vis0      smoopic   smoopjc   smoopkc
+#0.        0.        1.0       0.00      0.00      0.00
+#0.        0.        3.00000     0.30000     0.30000     0.30000
+2.        0.        6.00000    0.30000   0.30000   0.30000
+rm        rey\l     al        yaw       roll      i2dfl
+0.73      6.5       2.79      0.        0.        1.0
+gamma     pr        prt       suthc     tref      iturb     ipatchg
+1.4       0.72      0.9       198.6     460.      1.0       0.
+xref      yref      zref      sref      cref      scal
+0.25      0.        0.        1.0       1.0       1.0
+iprec     cfls      ubmin     upk       alpha     delta     ubfil
+ 0.        3.748     1.0       1.1       0.        0.        1.
+#2.        3.250     1.0       1.1       0.        0.        1.
+diffac    rsvis     omega     betvis    betvisv   npcons     nexp
+4.0       4.0       1.0       0.0       1.0       2.         1.
+anin      aninb     bninb     ijac      icord     inav       iprbet
+0.0       0.0       0.0       0.        0.0       0.         0.
+'rae.i321.4b.grd'  *** input co grid
+'rae.i321.4b.map'              *** topological map file
+'rae.st0'                   *** restart input file
+'rae_i321_4b.pl1'               *** output plotting file
+'rae_i321_4b.st1'            *** restart output file
+'rae.pch1'                  *** patch file
+'rae.pch2'                  *** patch file
+'rae.i321.4b.rhtall'                *** residuals at all times-steps
+'rae.rhtphy'                *** residuals at physical time-steps
+'rae.gpltfil'               *** plot3d gridfile for time-dependent solution
+'rae.qpltfil'               *** plot3d time-dependent solution
+'rae.datfil'                *** plot3d time-dependent data at selected nodes
+'rae.pntfil'                *** plot3d time-dependent data at selected times
+'rae.avgfil'

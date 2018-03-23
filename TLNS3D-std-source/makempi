@@ -1,0 +1,13 @@
+PROG =	tlns3dmpi
+
+LIBS = -L. -ltlns3d 
+
+include makeops
+
+all: $(PROG)
+
+$(PROG): $(OBJ) libtlns3d.a
+	$(F90) $(F90FLAGS) -o $@ $(OBJ) $(LIBS)
+
+include make.dependencies
+

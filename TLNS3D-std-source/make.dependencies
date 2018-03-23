@@ -1,0 +1,17 @@
+
+bcflow.o : bcflow.F tags.h async.dc bcflow.Fsync 
+bcturb.o : bcturb.F tags.h async.dc bcturb.Fasync bcturb.Fsync 
+bcvol.o : bcvol.F tags.h 
+disdr.o : disdr.F tags.h 
+errexit.o : errexit.F tags.h 
+force.o : force.F 
+getconv.o : getconv.F tags.h 
+main.o : main.F tags.h 
+savdata.o : savdata.F tags.h 
+savsol2.o : savsol2.F tags.h 
+savsolavg.o : savsolavg.F tags.h
+savtim.o : savtim.F tags.h 
+sendpch.o : sendpch.F tags.h 
+solve.o : solve.F tags.h 
+tlns3d.o : tlns3d.F tags.h 
+turbdr.o : turbdr.F 

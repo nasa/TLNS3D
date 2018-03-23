@@ -1,0 +1,52 @@
+n44 257x81 grid from larry wigton
+grdfmt    fstrt     fsave     fplot     cpplot    fnout     favg
+1.        0.         50.      0.        0.        0.        0.
+flev      fgrids    fmgtyp    ftime     deltat    frkcase   ftolrk
+3.        4.        1.        0.        0.14      0.        1.e-06
+fcyc      fcpout    fcnvout   fstep     ftol
+0050.     0.        1.        001.      0.5
+0050.     0.        1.        001.      0.5
+0500.     0.        1.        001.      0.5
+gitr(1)   gitr(2)   gitr(3)   gitr(4)   gitr(5)
+1.        2.        3.        3.        3.
+gitp(1)   gitp(2)   gitp(3)   gitp(4)   gitp(5)
+0.        0.        0.        0.        0.
+cflf      hmf       vis2      vis4      zeta
+-6.5      .0        0.50      1.00      .500
+c(1)      c(2)      c(3)      c(4)      c(5)      c(6)
+.25       .18       .40       .51       1.0       0.
+qfil(1)   qfil(2)   qfil(3)   qfil(4)   qfil(5)   qfil(6)
+-1.       0.        -1.       0.        -1.       0.
+beta(1)   beta(2)   beta(3)   beta(4)   beta(5)   beta(6)
+1.        0.        .56       0.        .44       0.
+smoopi    smoopj    smoopk    vepsn     vepsl     cau       enteps
+0.10      2.50      3.5       0.30      0.10      0.        1.0
+cflc      hmc       vis0      smoopic   smoopjc   smoopkc
+0.        0.        3.0       0.30      0.30      0.30
+rm        rey\l     al        yaw       roll      i2dfl
+0.20      1.52      13.87     0.        0.        1.0
+gamma     pr        prt       suthc     tref      iturb     ipatchg
+1.4       0.72      0.9       198.6     460.0     2.0       0.
+xref      yref      zref      sref      cref      scal
+0.        0.        0.        1.0       1.0       1.0
+fprec     cfls      ubmin     upk       alpha     delta     ubfil
+ #2.      3.25      1.0       1.1       0.        0.        1.0
+ 0.       3.748     1.0       1.1       0.        0.        1.0
+diffac    rsvis     omega     betvis    betvisv   npcons     nexp
+4.0       4.0       1.0       0.0       1.0       1.         1.
+anin      aninb     bninb     ijac      icord     inav       iprbet
+0.0       0.0       0.0       0.        0.0       0.         0.
+'n44.lbw257.gr.fmt.2b' *** input co grid
+'n44.lbw257.map.2b'    *** topological map file
+'n44.st0'           *** restart input file
+'n44.lbw.pl1'       *** output plotting file
+'n44.lbw257.st1'    *** restart output file
+'n44.pch1'
+'n44.pch2'
+'n44.rhtall'
+'n44.rhtphy'
+'n44.gpltfil'
+'n44.qpltfil'
+'n44.datfil'
+'n44.pntfil'
+'n44.avgfil'

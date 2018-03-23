@@ -1,0 +1,434 @@
+c------------------------------------------------------------------------------
+c The TLNS3D code was developed to solve Reynolds-averaged Navier-Stokes
+c Equations to simulate turbulent, viscous flows over three-dimensional
+c configurations. A general multiblock grid approach is used to model
+c complex configurations.  A multi-stage Runge-Kutta pseudo-time stepping
+c scheme is coupled with residual smoothing and multigrid acceleration
+c techniques to form an efficient algorithm for solving transonic viscous
+c flows over aerodynamic configurations of practical interest.
+c
+c The TLNS3D framework is licensed under the Apache License, Version 2.0
+c (the "License"); you may not use this application except in compliance
+c with the License. You may obtain a copy of the License at
+c http://www.apache.org/licenses/LICENSE-2.0. 
+
+c Unless required by applicable law or agreed to in writing, software
+c distributed under the License is distributed on an "AS IS" BASIS,
+c WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+c See the License for the specific language governing permissions and
+c limitations under the License.
+c----------------------------------------------------------------------------------------------
+c
+      subroutine  bcsymfl(imn,jmn,kmn,imx,jmx,kmx,imp1,jmp1,kmp1,
+     .                    imp2,jmp2,kmp2,w,p,eomu,turv1,ri1,ri2,
+     .                    rj1,rj2,rk1,rk2,nface,n1beg,n1end,
+     .                    n2beg,n2end,igrid,isoln,nsym,extyp    )
+c=======================================================================
+c 
+c     object : to compute the ghost cell values for flow variables
+c              at symmetry planes
+c
+c     initial coding : by v.n.vatsa, nasa langley ( March, 1990)
+c
+c     latest mods : By v.n.vatsa (Jan. 1998)
+c                   To utilize metric information for
+c                   determining the symmetry conditions
+c                   Patterned after suggestion by Abdol-Hamid (AS & M)
+c                  (do not need to specify symmetry plane explicitly)
+c
+c     w(i,j,k,1)  = density 
+c     w(i,j,k,2)  = momentum in x direction 
+c     w(i,j,k,3)  = momentum in y direction 
+c     w(i,j,k,4)  = momentum in z direction 
+c     w(i,j,k,5)  = total energy
+c     p(i,j,k)    = pressure
+c     eomu(i,j,k) = eddy-viscosity
+c
+c
+c
+
+      dimension      w(imp2,jmp2,kmp2,5),
+     .               p(imp2,jmp2,kmp2)  ,  eomu(imp2,jmp2,kmp2),
+     .                                    turv1(imp2,jmp2,kmp2)
+c
+      dimension      ri1(jmp1,kmp1,3)   , ri2(jmp1,kmp1,3),
+     .               rj1(imp1,kmp1,3)   , rj2(imp1,kmp1,3),
+     .               rk1(imp1,jmp1,3)   , rk2(imp1,jmp1,3)
+c
+c
+      common/files/ iread,iwrit,igrdfil,irstfil,isavfil,ipltfil
+     .                   ,imapfil,ipfil1,ipfil2,irhtall,irhtphy
+     .                   ,igpfil,iqpfil,idatfil,ipntfil,iavgfil
+c
+      common/fld/   gamma,gm1,dgm1,gogm1,rm,rho0,p0,ei0,h0,c0,u0,v0,w0,
+     .              ca,sa,pr,prt,rey,suthc,tref,i2dfl,iturb
+c
+c
+c------------------------------------------------------------------
+c     parameter nsym is not used in the latest version (as of Jan. 1998)
+c
+c     extyp  =   0  zero order extrapolation for p at symmetry boundary
+c                1  linear     extrapolation for p at symmetry boundary
+c
+c------------------------------------------------------------------
+c
+c     extyp = 0.0
+c
+c
+c      check the permissibility of the 'extyp' 
+c
+cBWW moved this test to imapin.f
+cBWW   if(extyp .gt.1.01 .or. extyp .lt. 0. )   then
+cBWW      write (iwrit,'(2x," extyp = ",f8.4, " not permissible")')
+cBWW      stop
+cBWW   endif
+c
+c      branch-cut for different type of boundary faces
+c
+      go to (100,200,300,400,500,600) nface
+c
+c
+  100 continue
+c--------------------- i = imn  face ----------------------------
+c
+      if( n1beg .ne. jmn) n1beg = n1beg +1
+      if( n1end .eq. jmx) n1end = n1end +1
+      if( n2beg .ne. kmn) n2beg = n2beg +1
+      if( n2end .eq. kmx) n2end = n2end +1
+c
+      i   =   imn
+c
+      do 110 j= n1beg, n1end
+      do 110 k= n2beg, n2end
+      w(i,j,k,1)   =      w(i+1,j,k,1)
+      p(i,j,k)     =    extyp * (2.*p(i+1,j,k) - p(i+2,j,k))
+     .             +(1.-extyp)*     p(i+1,j,k)
+      qn           =  2.*(w(i+1,j,k,2) * ri1(j,k,1)
+     .                   +w(i+1,j,k,3) * ri1(j,k,2)
+     .                   +w(i+1,j,k,4) * ri1(j,k,3))
+      w(i,j,k,2)   =      w(i+1,j,k,2) - ri1(j,k,1)*qn
+      w(i,j,k,3)   =      w(i+1,j,k,3) - ri1(j,k,2)*qn
+      w(i,j,k,4)   =      w(i+1,j,k,4) - ri1(j,k,3)*qn
+c
+      vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                    w(i,j,k,4)**2
+      w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+      eomu(i,j,k)  =    eomu(i+1,j,k)
+ccc   turv1(i,j,k) =   turv1(i+1,j,k)
+  110 continue
+c
+      if( igrid .eq. isoln) then
+c
+c        second layer of ghost cells for fine grids
+c
+         i   =  imn - 1
+c
+         do 120 j= n1beg, n1end
+         do 120 k= n2beg, n2end
+         w(i,j,k,1)   =    w(i+3,j,k,1)
+         p(i,j,k)     =    extyp * (2.*p(i+1,j,k) - p(i+2,j,k))
+     .                +(1.-extyp)*     p(i+3,j,k)
+         qn           =  2.*(w(i+3,j,k,2) * ri1(j,k,1)
+     .                      +w(i+3,j,k,3) * ri1(j,k,2)
+     .                      +w(i+3,j,k,4) * ri1(j,k,3))
+         w(i,j,k,2)   =      w(i+3,j,k,2) - ri1(j,k,1)*qn
+         w(i,j,k,3)   =      w(i+3,j,k,3) - ri1(j,k,2)*qn
+         w(i,j,k,4)   =      w(i+3,j,k,4) - ri1(j,k,3)*qn
+c
+         vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                       w(i,j,k,4)**2
+         w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+         eomu(i,j,k)  =    eomu(i+3,j,k)
+ccc      turv1(i,j,k) =   turv1(i+3,j,k)
+  120    continue
+      endif
+      return
+c
+c
+  200 continue
+c--------------------- i = imx  face ----------------------------
+c
+      if( n1beg .ne. jmn) n1beg = n1beg +1
+      if( n1end .eq. jmx) n1end = n1end +1
+      if( n2beg .ne. kmn) n2beg = n2beg +1
+      if( n2end .eq. kmx) n2end = n2end +1
+c
+      i   =   imx + 1
+c
+      do 210 j= n1beg, n1end
+      do 210 k= n2beg, n2end
+      w(i,j,k,1)   =    w(i-1,j,k,1)
+      p(i,j,k)     =    extyp * (2.*p(i-1,j,k) - p(i-2,j,k))
+     .             +(1.-extyp)*     p(i-1,j,k)
+      qn           =  2.*(w(i-1,j,k,2) * ri2(j,k,1)
+     .                   +w(i-1,j,k,3) * ri2(j,k,2)
+     .                   +w(i-1,j,k,4) * ri2(j,k,3))
+      w(i,j,k,2)   =      w(i-1,j,k,2) - ri2(j,k,1)*qn
+      w(i,j,k,3)   =      w(i-1,j,k,3) - ri2(j,k,2)*qn
+      w(i,j,k,4)   =      w(i-1,j,k,4) - ri2(j,k,3)*qn
+c
+      vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                    w(i,j,k,4)**2
+      w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+      eomu(i,j,k)  =    eomu(i-1,j,k)
+ccc   turv1(i,j,k) =   turv1(i-1,j,k)
+  210 continue
+c
+      if( igrid .eq. isoln) then
+c
+c        second layer of ghost cells for fine grids
+c
+         i   =  imx + 2
+c
+         do 220 j= n1beg, n1end
+         do 220 k= n2beg, n2end
+         w(i,j,k,1)   =    w(i-3,j,k,1)
+         p(i,j,k)     =    extyp * (2.*p(i-1,j,k) - p(i-2,j,k))
+     .                +(1.-extyp)*     p(i-3,j,k)
+         qn           =  2.*(w(i-3,j,k,2) * ri2(j,k,1)
+     .                      +w(i-3,j,k,3) * ri2(j,k,2)
+     .                      +w(i-3,j,k,4) * ri2(j,k,3))
+         w(i,j,k,2)   =      w(i-3,j,k,2) - ri2(j,k,1)*qn
+         w(i,j,k,3)   =      w(i-3,j,k,3) - ri2(j,k,2)*qn
+         w(i,j,k,4)   =      w(i-3,j,k,4) - ri2(j,k,3)*qn
+c
+         vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                       w(i,j,k,4)**2
+         w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+
+         eomu(i,j,k)  =    eomu(i-3,j,k)
+ccc      turv1(i,j,k) =   turv1(i-3,j,k)
+  220    continue
+      endif
+      return
+c
+c
+  300 continue
+c--------------------- j = jmn  face ----------------------------
+c
+      if( n1beg .ne. kmn) n1beg = n1beg +1
+      if( n1end .eq. kmx) n1end = n1end +1
+      if( n2beg .ne. imn) n2beg = n2beg +1
+      if( n2end .eq. imx) n2end = n2end +1
+c
+      j   =   jmn
+c
+      do 310 k= n1beg, n1end
+      do 310 i= n2beg, n2end
+      w(i,j,k,1)   =    w(i,j+1,k,1)
+      p(i,j,k)     =    extyp * (2.*p(i,j+1,k) - p(i,j+2,k))
+     .             +(1.-extyp)*     p(i,j+1,k)
+      qn           =  2.*(w(i,j+1,k,2) * rj1(i,k,1)
+     .                   +w(i,j+1,k,3) * rj1(i,k,2)
+     .                   +w(i,j+1,k,4) * rj1(i,k,3))
+      w(i,j,k,2)   =      w(i,j+1,k,2) - rj1(i,k,1)*qn
+      w(i,j,k,3)   =      w(i,j+1,k,3) - rj1(i,k,2)*qn
+      w(i,j,k,4)   =      w(i,j+1,k,4) - rj1(i,k,3)*qn
+c
+      vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                    w(i,j,k,4)**2
+      w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+      eomu(i,j,k)  =    eomu(i,j+1,k)
+ccc   turv1(i,j,k) =   turv1(i,j+1,k)
+  310 continue
+c
+      if( igrid .eq. isoln) then
+c
+c        second layer of ghost cells for fine grids
+c
+         j   =  jmn - 1
+c
+         do 320 k= n1beg, n1end
+         do 320 i= n2beg, n2end
+         w(i,j,k,1)   =    w(i,j+3,k,1)
+         p(i,j,k)     =    extyp * (2.*p(i,j+1,k) - p(i,j+2,k))
+     .                +(1.-extyp)*     p(i,j+3,k)
+         qn           =  2.*(w(i,j+3,k,2) * rj1(i,k,1)
+     .                      +w(i,j+3,k,3) * rj1(i,k,2)
+     .                      +w(i,j+3,k,4) * rj1(i,k,3))
+         w(i,j,k,2)   =      w(i,j+3,k,2) - rj1(i,k,1)*qn
+         w(i,j,k,3)   =      w(i,j+3,k,3) - rj1(i,k,2)*qn
+         w(i,j,k,4)   =      w(i,j+3,k,4) - rj1(i,k,3)*qn
+c
+         vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                       w(i,j,k,4)**2
+         w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+         eomu(i,j,k)  =    eomu(i,j+3,k)
+ccc      turv1(i,j,k) =   turv1(i,j+3,k)
+  320    continue
+      endif
+      return
+c
+c
+  400 continue
+c--------------------- j = jmx  face ----------------------------
+c
+      if( n1beg .ne. kmn) n1beg = n1beg +1
+      if( n1end .eq. kmx) n1end = n1end +1
+      if( n2beg .ne. imn) n2beg = n2beg +1
+      if( n2end .eq. imx) n2end = n2end +1
+c
+      j   =   jmx + 1
+c
+      do 410 k= n1beg, n1end
+      do 410 i= n2beg, n2end
+      w(i,j,k,1)   =    w(i,j-1,k,1)
+      p(i,j,k)     =    extyp * (2.*p(i,j-1,k) - p(i,j-2,k))
+     .             +(1.-extyp)*     p(i,j-1,k)
+      qn           =  2.*(w(i,j-1,k,2) * rj2(i,k,1)
+     .                   +w(i,j-1,k,3) * rj2(i,k,2)
+     .                   +w(i,j-1,k,4) * rj2(i,k,3))
+      w(i,j,k,2)   =      w(i,j-1,k,2) - rj2(i,k,1)*qn
+      w(i,j,k,3)   =      w(i,j-1,k,3) - rj2(i,k,2)*qn
+      w(i,j,k,4)   =      w(i,j-1,k,4) - rj2(i,k,3)*qn
+c
+      vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                    w(i,j,k,4)**2
+      w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+      eomu(i,j,k)  =    eomu(i,j-1,k)
+ccc   turv1(i,j,k) =   turv1(i,j-1,k)
+  410 continue
+c
+      if( igrid .eq. isoln) then
+c
+c        second layer of ghost cells for fine grids
+c
+         j   =  jmx + 2
+c
+         do 420 k= n1beg, n1end
+         do 420 i= n2beg, n2end
+         w(i,j,k,1)   =    w(i,j-3,k,1)
+         p(i,j,k)     =    extyp * (2.*p(i,j-1,k) - p(i,j-2,k))
+     .                +(1.-extyp)*     p(i,j-3,k)
+         qn           =  2.*(w(i,j-3,k,2) * rj2(i,k,1)
+     .                      +w(i,j-3,k,3) * rj2(i,k,2)
+     .                      +w(i,j-3,k,4) * rj2(i,k,3))
+         w(i,j,k,2)   =      w(i,j-3,k,2) - rj2(i,k,1)*qn
+         w(i,j,k,3)   =      w(i,j-3,k,3) - rj2(i,k,2)*qn
+         w(i,j,k,4)   =      w(i,j-3,k,4) - rj2(i,k,3)*qn
+c
+         vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                       w(i,j,k,4)**2
+         w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+         eomu(i,j,k)  =    eomu(i,j-3,k)
+ccc      turv1(i,j,k) =   turv1(i,j-3,k)
+  420    continue
+      endif
+      return
+c
+c
+  500 continue
+c--------------------- k = kmn  face ----------------------------
+c
+      if( n1beg .ne. imn) n1beg = n1beg +1
+      if( n1end .eq. imx) n1end = n1end +1
+      if( n2beg .ne. jmn) n2beg = n2beg +1
+      if( n2end .eq. jmx) n2end = n2end +1
+c
+      k   =   kmn
+c
+      do 510 i= n1beg, n1end
+      do 510 j= n2beg, n2end
+      w(i,j,k,1)   =    w(i,j,k+1,1)
+      p(i,j,k)     =    extyp * (2.*p(i,j,k+1) - p(i,j,k+2))
+     .             +(1.-extyp)*     p(i,j,k+1)
+      qn           =  2.*(w(i,j,k+1,2) * rk1(i,j,1)
+     .                   +w(i,j,k+1,3) * rk1(i,j,2)
+     .                   +w(i,j,k+1,4) * rk1(i,j,3))
+      w(i,j,k,2)   =      w(i,j,k+1,2) - rk1(i,j,1)*qn
+      w(i,j,k,3)   =      w(i,j,k+1,3) - rk1(i,j,2)*qn
+      w(i,j,k,4)   =      w(i,j,k+1,4) - rk1(i,j,3)*qn
+c
+      vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                    w(i,j,k,4)**2
+      w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+      eomu(i,j,k)  =    eomu(i,j,k+1)
+ccc   turv1(i,j,k) =   turv1(i,j,k+1)
+  510 continue
+c
+      if( igrid .eq. isoln) then
+c
+c        second layer of ghost cells for fine grids
+c
+         k   =  kmn - 1
+c
+         do 520 i= n1beg, n1end
+         do 520 j= n2beg, n2end
+         w(i,j,k,1)   =    w(i,j,k+3,1)
+         p(i,j,k)     =    extyp * (2.*p(i,j,k+1) - p(i,j,k+2))
+     .                +(1.-extyp)*     p(i,j,k+3)
+         qn           =  2.*(w(i,j,k+3,2) * rk1(i,j,1)
+     .                      +w(i,j,k+3,3) * rk1(i,j,2)
+     .                      +w(i,j,k+3,4) * rk1(i,j,3))
+         w(i,j,k,2)   =      w(i,j,k+3,2) - rk1(i,j,1)*qn
+         w(i,j,k,3)   =      w(i,j,k+3,3) - rk1(i,j,2)*qn
+         w(i,j,k,4)   =      w(i,j,k+3,4) - rk1(i,j,3)*qn
+c
+         vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                       w(i,j,k,4)**2
+         w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+         eomu(i,j,k)  = eomu(i,j,k+3)
+ccc      turv1(i,j,k) =turv1(i,j,k+3)
+  520    continue
+      endif
+      return
+c
+c
+  600 continue
+c--------------------- k = kmx  face ----------------------------
+c
+      if( n1beg .ne. imn) n1beg = n1beg +1
+      if( n1end .eq. imx) n1end = n1end +1
+      if( n2beg .ne. jmn) n2beg = n2beg +1
+      if( n2end .eq. jmx) n2end = n2end +1
+c
+      k   =   kmx + 1
+c
+      do 610 i= n1beg, n1end
+      do 610 j= n2beg, n2end
+      w(i,j,k,1)   =    w(i,j,k-1,1)
+      p(i,j,k)     =    extyp * (2.*p(i,j,k-1) - p(i,j,k-2))
+     .             +(1.-extyp)*     p(i,j,k-1)
+      qn           =  2.*(w(i,j,k-1,2) * rk2(i,j,1)
+     .                   +w(i,j,k-1,3) * rk2(i,j,2)
+     .                   +w(i,j,k-1,4) * rk2(i,j,3))
+      w(i,j,k,2)   =      w(i,j,k-1,2) - rk2(i,j,1)*qn
+      w(i,j,k,3)   =      w(i,j,k-1,3) - rk2(i,j,2)*qn
+      w(i,j,k,4)   =      w(i,j,k-1,4) - rk2(i,j,3)*qn
+c
+      vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                    w(i,j,k,4)**2
+      w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+      eomu(i,j,k)  =    eomu(i,j,k-1)
+ccc   turv1(i,j,k) =   turv1(i,j,k-1)
+  610 continue
+c
+      if( igrid .eq. isoln) then
+c
+c        second layer of ghost cells for fine grids
+c
+         k   =  kmx + 2
+c
+         do 620 i= n1beg, n1end
+         do 620 j= n2beg, n2end
+         w(i,j,k,1)   =    w(i,j,k-3,1)
+         p(i,j,k)     =    extyp * (2.*p(i,j,k-1) - p(i,j,k-2))
+     .                +(1.-extyp)*     p(i,j,k-3)
+         qn           =  2.*(w(i,j,k-3,2) * rk2(i,j,1)
+     .                      +w(i,j,k-3,3) * rk2(i,j,2)
+     .                      +w(i,j,k-3,4) * rk2(i,j,3))
+         w(i,j,k,2)   =      w(i,j,k-3,2) - rk2(i,j,1)*qn
+         w(i,j,k,3)   =      w(i,j,k-3,3) - rk2(i,j,2)*qn
+         w(i,j,k,4)   =      w(i,j,k-3,4) - rk2(i,j,3)*qn
+c
+         vtots        =      w(i,j,k,2)**2 + w(i,j,k,3)**2 +
+     .                       w(i,j,k,4)**2
+         w(i,j,k,5)   =      p(i,j,k) *dgm1 + .5*vtots / w(i,j,k,1)
+         eomu(i,j,k)  =    eomu(i,j,k-3)
+ccc      turv1(i,j,k) =   turv1(i,j,k-3)
+  620    continue
+      endif
+c
+c
+      return
+      end
