@@ -1,0 +1,9 @@
+tlns3dmpi
+tlns3dmb
+*.o
+*.a
+TLNS3D-std-source/lib_obj/
+TLNS3D-std-source/mpi_obj/
+TLNS3D-std-source/mb_obj/
+TLNS3D-std-source/html/
+TLNS3D-std-source/latex/
